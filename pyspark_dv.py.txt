@@ -1,0 +1,68 @@
+#####################################################################################################################
+#    TITLE                  -    data validation
+#    AUTHOR                 -    Sreenivas Reddy Erugula
+#    DATE                   -    2017-April
+#    VERSION                -    1.0
+#    PURPOSE                -    data validation between two text files
+#####################################################################################################################
+
+from pyspark import SparkContext, SparkConf, SQLContext
+import sys
+from pyspark.sql.types import *
+import pandas
+import numpy
+
+filePath=sys.argv[1]
+print filePath
+parameterFile=open(filePath, "r")
+
+for line in parameterFile;
+	(key, value)=(line.split("=")[0],line.split("=") [1])
+	value=value.strip("\n")
+	
+	if key=="sourceFile";
+	sourceFile = value
+	
+	elif key=="targetFile";
+	targetFile = value
+
+	elif key=="delimiter";
+	delimeter = value
+
+	else;
+		sys.exit(1)
+
+
+conf = SparkConf().setAppName("File to file validation").setMaster("local(*)")
+sc = SparkContext(conf=conf)
+spark=SQLContext(sc)
+
+	
+	sourceRDD=sc.textFile(sourceFile)
+	source_header = sourceRDD.first()
+	
+#source_data_rdd = sourceRDD.zipWithIndex().filer(lambda (row, index): index > 0).map(lambda (line,row):line.split('", "'))
+source_data_rdd = sourceRDD.zipWithIndex().filer(lamda (row, index): index > 0).map(lambda (line,row):line.split(','))
+sourceFields = [StructField(field_name,StringType(), True) for field_name in source_header.split(',')]
+sourceSchema = StructType(sourceFields)
+sourceDF=spark.createDataFrame(source_data_rdd,sourceSchema)
+
+	targetRDD=sc.textFile(targetFile)
+	target_header = targetRDD.first()
+
+target_data_rdd = targetRDD.zipWithIndex().filer(lamda (row, index): index > 0).map(lambda (line,row):line.split(','))
+targetFields = [StructField(field_name,StringType(), True) for field_name in target_header.split(',')]
+targetSchema = StructType(targetFields)
+targetDF=spark.createDataFrame(target_data_rdd,targetSchema)
+
+#sourceDF.registerTempTabtargetFile("SRC_TABLE")
+#targetDF.registerTempTable("TGT_TABLE")
+
+spark.registerDataFrameAsTable(sourceDF, "SRC_TABLE")
+spark.registerDataFrameAsTable(targetDF, "TGT_TABLE")
+
+commonDF = spark.sql("select * from SRC_TABLE a INNER JOIN TGT_TABLE b on a.pzInsKey=b.pzInsKey")
+
+rightDF = spark.sql("select * from SRC_TABLE a RIGHT JOIN TGT_TABLE b on a.pzInsKey=b.pzInsKey where a.pzInsKey is null")
+
+leftDF = spark.sql("select * from SRC_TABLE a LEFT JOIN TGT_TABLE b on a.pzInsKey=b.pzInsKey where a.pzInsKey is null")
