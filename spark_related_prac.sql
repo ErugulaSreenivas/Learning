@@ -1,5 +1,7 @@
 RDD is a distributed collection of elements across the nodes in cluster. Also we can performs parallel operations. Moreover, Spark RDDs are immutable in nature. Although, we can create new RDD by transforming existing Spark RDD
 
+change the file
+
 The internal concept of RDD is, it will distribute the data across nodes in the cluster, also we can performs parallel operations with RDD.
 basically spark RDDs are immutable nature, we can create new RDD by transforming existing RDD.
 
