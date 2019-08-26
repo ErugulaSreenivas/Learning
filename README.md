@@ -794,3 +794,35 @@ df_result.show(15, truncate = False)
 df_result.write.csv("/tmp/i725369/map_cea_output_files/sc2_map_cea_output_08_0")
 
 **************************************************END**********************************
+
+******************Connect to MySQL through Pyspark*************************
+#pyspark2 --master local --conf spark.ui.port=4064 --queue root.opsdata.appdev --jars /tmp/mysql_jar/mysql-connector-java-8.0.15.jar
+from pyspark import SparkContext, SparkConf
+from pyspark.sql.types import *
+import pyspark
+from pyspark.sql import SparkSession, HiveContext
+from pyspark.sql.functions import substring, length, col, expr
+from pyspark.sql.types import IntegerType
+
+sparkSession = (SparkSession .builder .appName('pyspark-read-and-write-from-MariaDB').enableHiveSupport().getOrCreate())
+
+df_details = [StructField('CHMP_DB_NM',StringType(),True), StructField('CHMP_TBL_NM',StringType(),True),StructField('CHLN_DB_NM',StringType(),True),StructField('CHLN_TBL_NM',StringType(),True),StructField('MTCH_PC',StringType(),True),StructField('FLG_KY',StringType(),True)]
+final_details = StructType(fields=df_details)
+df_dedup = sparkSession.read.csv('/tmp/r660737/jyotsna/input_without_d/subset_mtdiscovery_final_report_exclude_d/*.csv', schema = final_details)
+
+df_dedup_filter1 = df_dedup.withColumn("TBL_ID",expr("substring(TBL_ID, 0, length(TBL_ID)-1)"))
+df_dedup_filter2 = df_dedup_filter1.withColumn("COLUMN_COUNT",expr("substring(COLUMN_COUNT, 0, length(COLUMN_COUNT)-1)"))
+df_dedup_filter4 = df_dedup_filter2.withColumn("COLUMN_COUNT", df_dedup_filter2["COLUMN_COUNT"].cast(IntegerType()))
+
+df_dedup.write.format('jdbc').options(
+      url='jdbc:mysql://169.125.195.53/clouderaML',
+      driver='com.mysql.jdbc.Driver',
+      dbtable='ops_data_sc2_test',
+      user='u_3FsyJ3bkrO01ek',
+      password='F2eQL1JTR15rh65p').mode('append').save()
+     
+#Latest credentials for connecting MariaDB:
+mysql -u u_3FsyJ3bkrO01ek -h 169.125.195.53 -D clouderaML -pF2eQL1JTR15rh65p
+
+************************************END*************************************************************
+      
