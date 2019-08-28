@@ -1,1 +1,46 @@
 abcdefeg123456
+aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaasc1aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+Technical details:
+Scenario-1
+Description: Table id’s with same Column count, Column name and Datatype (All columns – data type matching).
+•	Connect to Hive Metastore (MySQL).
+•	Fetch the data from Hive Metastore to Edge node location.
+•	Load data from edge node to Hadoop environment for identifying duplicate tables.
+•	Identifying duplicates tables using Pyspark.
+•	Loaded final result into Hadoop location for validation purpose.
+•	Load final report into MariaDB for reporting purpose.
+•	User can access data through Tableau Dashboard from MariaDB.
+
+Note:  Report contains Dedup_key column which helps in identifying the duplicates.
+rpt:
+DB_NAME	TABLE_ID	TABLE_NAME	TABLE_TYPE	DUPLICATE_KEY	COLUMN_COUNT	GOLDEN_COPY_FLAG
+sys	44440	nav_hive	MANAGED_TABLE	2	7	0
+sys	50693	hive_test	MANAGED_TABLE	2	7	0
+sys	47458	nav_test	MANAGED_TABLE	2	7	0
+db_dataops	99545	trans_bb_200903	EXTERNAL_TABLE	3	20	0
+db_dataops	99961	trans_bb_200904	EXTERNAL_TABLE	3	20	0
+db_dataops	100244	trans_bb_200910	EXTERNAL_TABLE	3	20	0
+db_dataops	100246	trans_bb_200909	EXTERNAL_TABLE	3	20	0
+db_dataops	100642	trans_bb_201002	EXTERNAL_TABLE	3	20	0
+
+sc2:
+---
+Subset scenario:
+	Two datasets are said to be duplicate (after confirming Tenants/Table Owners), if they have 80-99% Columns- Data types are matching.
+	Column name – Data type of both champions, challenger tables will be compared and if matching percentage is > 80% then only reports will be generated.
+	Report is incorporated with flag column that differentiate the comparison between tables having different column counts.
+
+•	Output of Scenario_1 is input for subset scenario.
+•	Remaining steps are same as scenario-1 till loading final result into MariaDB.
+
+rpt:
+--Champion_DB_name	Champion_Tbl_name	Champion_gold_key	Challenger_DB_name	Challenger_Tbl_name	Challenger_gold_key	Match_Percentage	Flag_key
+db_opsdata_raw	cr_jrny_ases	0	db_opsdata_refined	cdsvc_acct_stars_crd_ccar	0	89	0
+db_opsdata_raw	deposit_transaction_addl	0	db_opsdata_raw	temp_deposit_transaction_addl	0	82	0
+db_opsdata_raw	deposit_account	1	db_opsdata_curated	deposit_account_v1	0	98	0
+db_opsdata_curated	psav_retag_0518_final	1	db_opsdata_refined	alpha_hash_20186	0	86	0
+db_opsdata_raw	rtl_dim_cr_ac_dtl	0	db_opsdata_refined	rtl_dim_cr_ac_dtl_72018	0	98	0
+db_opsdata_raw	vip_list	0	db_opsdata_utd	raw_utd_emailcc_vip_20180128	0	88	0
+db_opsdata_raw	edw_dim_eci_dtl_07_2017	0	db_opsdata_raw	edw_dim_eci_dtl_112017_raw	0	94	0
+
+xyzabcdefghhhhhhhhhhhhhhhhhhhhhhhhhhhhhh
